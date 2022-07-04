@@ -8,6 +8,14 @@ In the project directory, you can run:
 
 ### `npm start`
 
+Do forget to setup the env vars
+export REACT_APP_APIKEY=''
+export REACT_APP_AUTHDOMAIN=''
+export REACT_APP_PROJECTID=''
+export REACT_APP_STORAGEBUCKET=''
+export REACT_APP_MESSAGINGSENDERID=''
+export REACT_APP_APPID=''
+
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 

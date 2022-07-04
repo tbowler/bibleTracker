@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-module.exports.getChapter = async function(book,chapter) {
+export async function getChapter(book,chapter) {
   return new Promise((resolve, reject) => {
     const options = {
       method: 'GET',

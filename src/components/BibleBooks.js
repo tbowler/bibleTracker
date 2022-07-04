@@ -3,7 +3,8 @@ import { ref, get, set, update, onValue} from "firebase/database";
 import { Button, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import Books from './Books';
 import ChapterDisplay from './ChapterDisplay';
-import {getChapter} from '../api/bible';
+const bibleApi = require('../api/bible');
+console.log('getChapter', bibleApi.getChapter)
 const _ = require('lodash');
 const totalChapters = 1189;
 
@@ -61,7 +62,7 @@ class BibleBooks extends React.Component {
   }
 
   fetchChapter = async (book, chapter) => {
-    const data = await getChapter(book, chapter);
+    const data = await bibleApi.getChapter(book, chapter);
     this.setState({book, chapterNumber: chapter, chapter: data}); 
   }
 
@@ -77,7 +78,7 @@ class BibleBooks extends React.Component {
   completeChapter = () => {
     const chaptersRead = this.getChaptersRead();
     const percentComplete = (chaptersRead / totalChapters) * 100;
-    set(ref(this.props.db, `users/${this.props.user.uid}/books/${this.state.book}/${this.state.chapterNumber}`), (new Date).toISOString());
+    set(ref(this.props.db, `users/${this.props.user.uid}/books/${this.state.book}/${this.state.chapterNumber}`), (new Date()).toISOString());
     set(ref(this.props.db, `overview/${this.props.user.uid}/percentComplete`), percentComplete);
   }
 
