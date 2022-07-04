@@ -4,7 +4,6 @@ import { Button, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableH
 import Books from './Books';
 import ChapterDisplay from './ChapterDisplay';
 const bibleApi = require('../api/bible');
-console.log('getChapter', bibleApi.getChapter)
 const _ = require('lodash');
 const totalChapters = 1189;
 
@@ -43,7 +42,7 @@ class BibleBooks extends React.Component {
     onValue(ref(this.props.db, `users/${this.props.user.uid}/books`), (snapshot) => {
       this.setState({
         userBookList: snapshot.val(),
-      }, () => console.log('userBookList', this.state.userBookList));
+      });
     });
 
     this.getOverview();  
@@ -67,7 +66,7 @@ class BibleBooks extends React.Component {
   }
 
   getChaptersRead = () => {
-    let total = 0;
+    let total = 1;
     _.forEach(_.keys(_.get(this.state, 'userBookList', {})), (key) => {
       total = total + _.get(this.state, `userBookList[${key}]`, []).length;
     });

@@ -87,5 +87,3 @@ _.forEach(loop, (item) => {
   });
   books.push(book);
 });
-
-console.log(JSON.stringify(books, null, 2));

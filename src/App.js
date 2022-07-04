@@ -9,7 +9,6 @@ import { Box } from '@mui/material';
 import AppBar from './components/AppBar';
 import BibleBooks from './components/BibleBooks';
 
-console.log(process.env);
 const app = initializeApp({
   apiKey: process.env.REACT_APP_APIKEY,
   authDomain: process.env.REACT_APP_AUTHDOMAIN,
