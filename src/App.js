@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import './App.css';
 import { initializeApp } from 'firebase/app';
 import { getDatabase} from "firebase/database";
@@ -8,6 +9,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Box } from '@mui/material';
 import AppBar from './components/AppBar';
 import BibleBooks from './components/BibleBooks';
+import Leaderboard from './components/Leaderboard';
 
 const app = initializeApp({
   apiKey: process.env.REACT_APP_APIKEY,
@@ -44,10 +46,15 @@ const signInWithGoogle = () => {
 
 function App() {
   const [user] = useAuthState(auth);
+  const [showLeaderboard, setShowLeaderboard] = useState(true);
+  const toggleShow = () => {
+    setShowLeaderboard(!showLeaderboard);
+  };
   return (
     <div className="App">
-      <AppBar signInWithGoogle={signInWithGoogle} auth={auth} user={user} name='Bible Tracker' />
+      <AppBar toggleShow={toggleShow} showLeaderboard={showLeaderboard} signInWithGoogle={signInWithGoogle} auth={auth} user={user} name='Bible Tracker' />
       <Box component="main" sx={{ p: 3 }}>
+      {user && showLeaderboard && <Leaderboard showLeaderboard={showLeaderboard} db={db} user={user}/>}
       {user && <BibleBooks db={db} user={user}/>}
       </Box>
     </div>

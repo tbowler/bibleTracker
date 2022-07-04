@@ -1,6 +1,6 @@
 import React from "react";
 import { ref, get, set, update, onValue} from "firebase/database";
-import { Button, Grid, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Button, Grid } from '@mui/material';
 import Books from './Books';
 import ChapterDisplay from './ChapterDisplay';
 const bibleApi = require('../api/bible');
@@ -27,14 +27,17 @@ class BibleBooks extends React.Component {
       if (!snapshot.exists()) {
         update(ref(this.props.db, `users/${this.props.user.uid}`), {
           name: this.props.user.displayName,
+          photoURL: this.props.user.photoURL,
         });
       }
     });
     get(ref(this.props.db, `overview/${this.props.user.uid}`)).then((snapshot) => {
       if (!snapshot.exists()) {
+        console.log(this.props.user);
         update(ref(this.props.db, `overview/${this.props.user.uid}`), {
           name: this.props.user.displayName,
           percentComplete: 0,
+          photoURL: this.props.user.photoURL,
         });
       }
     });
@@ -44,21 +47,7 @@ class BibleBooks extends React.Component {
         userBookList: snapshot.val(),
       });
     });
-
-    this.getOverview();  
   };
-
-  async getOverview() {
-    if (!_.isUndefined(_.get(this.props, 'user.uid', undefined))) {
-      // update the overview whenever it changes
-      onValue(ref(this.props.db, `/overview`), (snapshot) => {
-        this.setState({
-          users: _.orderBy(snapshot.val(), 'percentComplete', 'desc').slice(0, 3),
-          fullListOfUsers: _.orderBy(snapshot.val(), 'percentComplete', 'desc'),
-        });
-      });
-    }
-  }
 
   fetchChapter = async (book, chapter) => {
     const data = await bibleApi.getChapter(book, chapter);
@@ -110,48 +99,7 @@ class BibleBooks extends React.Component {
     return (
       <div className="App-header">
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
-            <strong>Leaderboard</strong><br />
-            <TableContainer component={Paper}>
-              <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Place</TableCell>
-                    <TableCell>User</TableCell>
-                    <TableCell>Complete</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {this.state.users.length > 0 && (
-                    _.map(this.state.users, (user, key) => {
-                      return (
-                        <TableRow
-                          key={`user-${key}`}
-                          sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                        >
-                          <TableCell component="th" scope="row">
-                            {key+1}
-                          </TableCell>
-                          <TableCell component="th" scope="row">
-                            {user.name}
-                          </TableCell>
-                          <TableCell component="th" scope="row">
-                            {`${Number.parseFloat(user.percentComplete).toFixed(2)}%`}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }))}
-                </TableBody>
-              </Table>
-            </TableContainer>   
-            {this.state.fullListOfUsers.length > 3 && this.state.users.length === 3 && (
-              <Chip label="Show All" onClick={() => this.showAllUsers()} />
-            )}
-            {this.state.fullListOfUsers.length > 3 && this.state.users.length !== 3 && (
-              <Chip label="Show Less" onClick={() => this.showLessUsers()} />
-            )}
-          </Grid>
-          <Grid item xs={12} sm={6} md={9}>
+          <Grid item xs={12}>
             <Books fetchChapter={this.fetchChapter} userBookList={this.state.userBookList} />
             {this.state.chapter && (
               <>
