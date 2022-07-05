@@ -74,9 +74,9 @@ class Books extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      book: 0,
+      book: _.get(this.props, 'book', 0),
       chapters: _.range(1, 51),
-      chapter: 0,
+      chapter: _.get(this.props, 'chapter', 0),
       completedChapters: 0,
     };
   }
@@ -94,7 +94,7 @@ class Books extends React.Component {
   onChangeChapter = (event) => {
     this.setState({
       chapter: event.target.value,
-    }, () => this.props.fetchChapter(_.get(books, `[${this.state.book}].name`, 'Genesis'), this.state.chapter));
+    }, () => this.props.fetchChapter(_.get(books, `[${this.state.book}].name`, 'Genesis'), this.state.chapter, this.state.book));
   };
 
   render() {

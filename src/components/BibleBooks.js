@@ -1,6 +1,6 @@
 import React from "react";
 import { ref, get, set, update, onValue} from "firebase/database";
-import { Button, Grid } from '@mui/material';
+import { Button, Grid, CircularProgress } from '@mui/material';
 import Books from './Books';
 import ChapterDisplay from './ChapterDisplay';
 const bibleApi = require('../api/bible');
@@ -16,9 +16,11 @@ class BibleBooks extends React.Component {
       fullListOfUsers: [],
       fetchChapter: true,
       book: null,
+      bookNumber: 0,
       chapterNumber: null,
       chapter: null,
       showCompleteList: false,
+      loading: false,
     };
   }
 
@@ -33,7 +35,6 @@ class BibleBooks extends React.Component {
     });
     get(ref(this.props.db, `overview/${this.props.user.uid}`)).then((snapshot) => {
       if (!snapshot.exists()) {
-        console.log(this.props.user);
         update(ref(this.props.db, `overview/${this.props.user.uid}`), {
           name: this.props.user.displayName,
           percentComplete: 0,
@@ -49,9 +50,13 @@ class BibleBooks extends React.Component {
     });
   };
 
-  fetchChapter = async (book, chapter) => {
-    const data = await bibleApi.getChapter(book, chapter);
-    this.setState({book, chapterNumber: chapter, chapter: data}); 
+  fetchChapter = async (book, chapter, bookNumber) => {
+    this.setState({
+      loading: true,
+    }, async () => {
+      const data = await bibleApi.getChapter(book, chapter, bookNumber);
+      this.setState({bookNumber, book, chapterNumber: chapter, chapter: data, loading: false}); 
+    })
   }
 
   getChaptersRead = () => {
@@ -95,12 +100,22 @@ class BibleBooks extends React.Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return (
+        <CircularProgress />
+      );
+    }
     const isChapterComplete = _.get(this, `state.userBookList[${this.state.book}][${this.state.chapterNumber}]`, null);
     return (
       <div className="App-header">
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Books fetchChapter={this.fetchChapter} userBookList={this.state.userBookList} />
+            <Books 
+              book={_.get(this, 'state.bookNumber', 0)}
+              fetchChapter={this.fetchChapter}
+              userBookList={this.state.userBookList}
+              chapter={_.get(this, 'state.chapterNumber', 0)}
+            />
             {this.state.chapter && (
               <>
               <ChapterDisplay chapter={this.state.chapter} />
