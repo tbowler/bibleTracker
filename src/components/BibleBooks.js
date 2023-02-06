@@ -21,6 +21,10 @@ class BibleBooks extends React.Component {
       chapter: null,
       showCompleteList: false,
       loading: false,
+      chapterDownloadeTime: null,
+      enableButton: false,
+      minutes: 0,
+      timeCheck: null,
     };
   }
 
@@ -50,12 +54,40 @@ class BibleBooks extends React.Component {
     });
   };
 
+  enableButton = () => {
+    this.setState({ enableButton: true });
+  }
+
+  startTimer = (duration) => {
+    const timeCheck = setTimeout(() => {
+      this.enableButton();
+    }, duration);
+    this.setState({
+      timeCheck,
+    });
+  }
+
   fetchChapter = async (book, chapter, bookNumber) => {
     this.setState({
       loading: true,
+      enableButton: false,
     }, async () => {
       const data = await bibleApi.getChapter(book, chapter, bookNumber);
-      this.setState({bookNumber, book, chapterNumber: chapter, chapter: data, loading: false}); 
+      // get the number of words to determine how long to wait to enable the button
+      const words = _.get(data, 'text', '').split(' ').length;
+      // multiply by 0.1 seconds per word
+      const duration = (words * 0.1) * 1000;
+      const minutes = duration / 1000 / 60;
+      this.setState({
+        bookNumber,
+        book,
+        chapterNumber: chapter,
+        chapter: data,
+        loading: false,
+        minutes,
+      }, () => {
+        this.startTimer(duration);
+      }); 
     })
   }
 
@@ -99,13 +131,30 @@ class BibleBooks extends React.Component {
     });
   }
 
+  isButtonDisabled = () => {
+    const isChapterComplete = _.get(this, `state.userBookList[${this.state.book}][${this.state.chapterNumber}]`, null);
+
+    if (isChapterComplete !== null) {
+      return 0;
+    }
+
+    // Disable the button until a certain amount of time has elapsed
+    if(_.get(this, 'state.enableButton', false) === false) {
+      return 1;
+    }
+
+    return 2;
+  }
+
   render() {
+    console.log('this.state.timeCheck', this.state.timeCheck);
     if (this.state.loading) {
       return (
         <CircularProgress />
       );
     }
-    const isChapterComplete = _.get(this, `state.userBookList[${this.state.book}][${this.state.chapterNumber}]`, null);
+
+    const buttonDisabled = this.isButtonDisabled();
     return (
       <div className="App-header">
         <Grid container spacing={2}>
@@ -116,20 +165,26 @@ class BibleBooks extends React.Component {
               userBookList={this.state.userBookList}
               chapter={_.get(this, 'state.chapterNumber', 0)}
             />
-            {this.state.chapter && (
-              <>
+          </Grid>
+          {this.state.chapter && (
+            <>
+            <Grid item xs={12}>
               <ChapterDisplay chapter={this.state.chapter} />
+            </Grid>
+            <Grid item xs={12}>
               <Button
                 variant="contained"
-                color={isChapterComplete !== null ? 'secondary' : 'primary'}
-                disabled={isChapterComplete !== null}
+                color={(buttonDisabled === 1 || buttonDisabled === 0) ? 'secondary' : 'primary'}
+                disabled={(buttonDisabled === 1 || buttonDisabled === 0)}
                 onClick={() => this.completeChapter()}
               >
-                {isChapterComplete !== null ? 'Complete' : 'Mark Complete'}
+                {buttonDisabled === 0 && ('Complete')}
+                {buttonDisabled === 1 && (`Waiting ${_.get(this, 'state.minutes', 0).toFixed(2)} Minutes`)}
+                {buttonDisabled === 2 && ('Mark Complete')}
               </Button>
-              </>
-            )}
-          </Grid>
+            </Grid>
+            </>
+          )}
         </Grid>
       </div>
     );
